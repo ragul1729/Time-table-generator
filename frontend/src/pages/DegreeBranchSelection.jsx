@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+import './DegreeBranchSelection.css';
 const DropdownMenu = ({ title, options }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -25,19 +25,85 @@ const DropdownMenu = ({ title, options }) => {
         </ul>
       )}
     </div>
+
   );
 };
 
 const DegreeBranchSelection = () => {
   return (
-    <div className="flex flex-col items-center space-y-10 mt-10">
-      <div className="text-center">
-        <h2 className="text-2xl font-semibold mb-2">Select degree</h2>
-        <DropdownMenu title="Select degree" options={["B.Eng", "M.Eng", "MCA", "M.Sc"]} />
+    <div className="degree-branch">
+      <div className="button-group">
+          <button>Monday</button>
+          <button>Tuesday</button>
+          <button>Wednesday</button>
+          <button>Thursday</button>
+          <button className="active">Friday</button>
       </div>
-      <div className="text-center">
-        <h2 className="text-2xl font-semibold mb-2">Select branch</h2>
-        <DropdownMenu title="Select branch" options={["CSE", "EEE", "ECE", "Mech"]} />
+      <div className="dropdown">
+          <button>
+              <i className="fas fa-cog"></i>
+              <span>Select Course</span>
+          </button>
+          <div className="dropdown-content">
+              <button>Course 1</button>
+              <button>Course 2</button>
+              <button>Course 3</button>
+              <button>ADD BREAK</button>
+          </div>
+      </div>
+      <div className="input-group">
+          <div>
+              <label htmlFor="hours">No. of hours</label>
+              <input type="text" id="hours" value="2" />
+          </div>
+          <div>
+              <label htmlFor="break">Break</label>
+              <input type="text" id="break" value="Lunch" />
+          </div>
+      </div>
+      <div className="time-group">
+          <div>
+              <h2>Start time</h2>
+              <div className="time-box">
+                  <p>Enter time</p>
+                  <div className="time-inputs">
+                      <input type="text" value="20" />
+                      <span>:</span>
+                      <input type="text" value="00" />
+                  </div>
+                  <div className="am-pm-buttons">
+                      <button className="am">AM</button>
+                      <button className="pm">PM</button>
+                  </div>
+                  <div className="action-buttons">
+                      <button>Cancel</button>
+                      <button className="ok">OK</button>
+                  </div>
+              </div>
+          </div>
+          <div>
+              <h2>End time</h2>
+              <div className="time-box">
+                  <p>Enter time</p>
+                  <div className="time-inputs">
+                      <input type="text" value="20" />
+                      <span>:</span>
+                      <input type="text" value="00" />
+                  </div>
+                  <div className="am-pm-buttons">
+                      <button className="am">AM</button>
+                      <button className="pm">PM</button>
+                  </div>
+                  <div className="action-buttons">
+                      <button>Cancel</button>
+                      <button className="ok">OK</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+      <div className="action-group">
+          <button>Add</button>
+          <button>Generate Timetable</button>
       </div>
     </div>
   );

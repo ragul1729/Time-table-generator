@@ -1,0 +1,61 @@
+.add-course {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: white;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+.container {
+    width: 100%;
+    max-width: 400px;
+    margin: auto;
+}
+h1 {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+}
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+label {
+    display: block;
+    font-size: 1.125rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+.input-group {
+    position: relative;
+}
+input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    background-color: #f3f4f6;
+}
+.grid {
+    display: grid;
+    gap: 1.5rem;
+}
+.grid-2 {
+    grid-template-columns: 1fr 1fr;
+}
+.button-container {
+    text-align: center;
+}
+button {
+    padding: 0.5rem 1.5rem;
+    background-color: black;
+    color: white;
+    font-size: 1.125rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+}
