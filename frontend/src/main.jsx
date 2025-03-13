@@ -13,7 +13,7 @@ import HomePage from './pages/HomePage.jsx'
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
     {/* <StrictMode> */}
-      <Timetable />
+      <PreviousTimeTables />
     {/* </StrictMode> */}
   </BrowserRouter>
 )

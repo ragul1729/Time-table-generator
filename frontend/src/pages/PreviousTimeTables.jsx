@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import './PreviousTimeTables.css';
+import Sidebar from '../components/Sidebar';
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 const periods = ["8:30-9:20", "9:30-10:20", "10:30-11:20", "11:30-12:20", "1:30-2:20", "2:30-3:20", "3:30-4:20"];
@@ -41,14 +42,14 @@ const PreviousTimeTables = () => {
 
   return (
     <div className="time-table">
-      <div className="sidebar">
+      {/* <div className="sidebar">
           <button>HOME</button>
           <button>DEGREE</button>
           <button>COURSE</button>
           <button>SCHEDULE</button>
           <button>VIEW</button>
-      </div>
-
+      </div> */}
+      <Sidebar />
       
       <div className="main-content">
           <h1>Time Table List</h1>

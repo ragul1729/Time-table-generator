@@ -1,22 +1,13 @@
-import React from "react";
-import { Button } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import "./Sidebar.css";
 
 const Sidebar = () => {
-  const navigate = useNavigate();
-
   return (
-    <div className="w-48 h-screen bg-gray-300 flex flex-col items-center pt-10 space-y-4">
-      {["Home", "Degree", "Course", "Schedule", "View"].map((item) => (
-        <Button
-          key={item}
-          variant="contained"
-          className="w-32 bg-blue-600 text-white"
-          onClick={() => navigate(`/${item.toLowerCase()}`)}
-        >
-          {item}
-        </Button>
-      ))}
+    <div className="sidebar">
+      <button className="sidebar-button">Home</button>
+      <button className="sidebar-button">Degree</button>
+      <button className="sidebar-button">Course</button>
+      <button className="sidebar-button">Schedule</button>
+      <button className="sidebar-button">View</button>
     </div>
   );
 };
