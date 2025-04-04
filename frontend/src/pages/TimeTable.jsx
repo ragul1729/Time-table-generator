@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import Sidebar from "../components/Sidebar";
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 const periods = ["8:30-9:20", "9:30-10:20", "10:30-11:20", "11:30-12:20", "1:30-2:20", "2:30-3:20", "3:30-4:20"];
@@ -39,42 +40,45 @@ const Timetable = () => {
   };
 
   return (
-    <div className="flex flex-col items-center mt-10">
-      <div id="schedule-table" className="overflow-x-auto border rounded-lg shadow-lg p-4 bg-white">
-        <table className="table-auto border-collapse">
-          <thead>
-            <tr>
-              <th className="border px-4 py-2 bg-gray-200">Time</th>
-              {periods.map((period, index) => (
-                <th key={index} className="border px-4 py-2 bg-gray-200">{period}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {days.map((day, dayIndex) => (
-              <tr key={dayIndex}>
-                <td className="border px-4 py-2 bg-gray-100 font-bold">{day}</td>
-                {table[dayIndex].map((cell, periodIndex) => (
-                  <td
-                    key={periodIndex}
-                    className={`border px-6 py-4 cursor-pointer transition ${cell.color}`}
-                    onClick={() => handleCellClick(dayIndex, periodIndex)}
-                  >
-                    {cell.course || "ADL"}
-                  </td>
+    <div>
+      <Sidebar />
+      <div className="flex flex-col items-center mt-10">
+        <div id="schedule-table" className="overflow-x-auto border rounded-lg shadow-lg p-4 bg-white">
+          <table className="table-auto border-collapse">
+            <thead>
+              <tr>
+                <th className="border px-4 py-2 bg-gray-200">Time</th>
+                {periods.map((period, index) => (
+                  <th key={index} className="border px-4 py-2 bg-gray-200">{period}</th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {days.map((day, dayIndex) => (
+                <tr key={dayIndex}>
+                  <td className="border px-4 py-2 bg-gray-100 font-bold">{day}</td>
+                  {table[dayIndex].map((cell, periodIndex) => (
+                    <td
+                      key={periodIndex}
+                      className={`border px-6 py-4 cursor-pointer transition ${cell.color}`}
+                      onClick={() => handleCellClick(dayIndex, periodIndex)}
+                    >
+                      {cell.course || "ADL"}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-      <button
-        onClick={downloadPDF}
-        className="mt-6 px-6 py-2 bg-black text-white text-lg rounded-md hover:bg-gray-800"
-      >
-        Download as PDF
-      </button>
+        <button
+          onClick={downloadPDF}
+          className="mt-6 px-6 py-2 bg-black text-white text-lg rounded-md hover:bg-gray-800"
+        >
+          Download as PDF
+        </button>
+      </div>
     </div>
   );
 };

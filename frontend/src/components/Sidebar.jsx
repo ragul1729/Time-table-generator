@@ -1,13 +1,15 @@
 import "./Sidebar.css";
+import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
+  const navigate = useNavigate();
   return (
     <div className="sidebar">
-      <button className="sidebar-button">Home</button>
-      <button className="sidebar-button">Degree</button>
-      <button className="sidebar-button">Course</button>
-      <button className="sidebar-button">Schedule</button>
-      <button className="sidebar-button">View</button>
+      <button className="sidebar-button" onClick={ () => navigate("/home") }>Home</button>
+      <button className="sidebar-button" onClick={ () => navigate("/degreebranch") }>Degree</button>
+      <button className="sidebar-button" onClick={ () => navigate("/addcourse") }>Course</button>
+      <button className="sidebar-button" onClick={ () => navigate("/schedule") }>Schedule</button>
+      <button className="sidebar-button" onClick={ () => navigate("/previoustimetables") }>View</button>
     </div>
   );
 };
