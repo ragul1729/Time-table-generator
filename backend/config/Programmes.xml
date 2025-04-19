@@ -1,0 +1,34 @@
+<Programmes>
+    <Degree>
+        <Name>B.E</Name>
+        <Branches>
+            <Branch>Automobile Engineering</Branch>
+            <Branch>Biomedical Engineering</Branch>
+            <Branch>Civil Engineering</Branch>
+            <Branch>Computer Science and Engineering</Branch>
+            <Branch>Electrical and Electronics Engineering</Branch>
+            <Branch>Electronics and Communication Engineering</Branch>
+            <Branch>Instrumentation and Control Engineering</Branch>
+            <Branch>Mechanical Engineering</Branch>
+            <Branch>Instrumentation and Control Engineering</Branch>
+            <Branch>Metallurgical Engineering</Branch>
+        </Branches>
+    </Degree>
+
+    <Degree name="M.E">
+        <Branch>Computer Science and Engineering</Branch>
+        <Branch>Control Systems</Branch>
+        <Branch>Embedded and Real-Time Systems</Branch>
+        <Branch>Engineering Design</Branch>
+        <Branch>VLSI Design</Branch>
+    </Degree>
+
+    <Degree name="M.Sc">
+        <Branch>Software Systems</Branch>
+        <Branch>Theoretical Computer Science</Branch>
+        <Branch>Data Science</Branch>
+        <Branch>Cyber Security</Branch>
+    </Degree>
+</Programmes>
+
+
