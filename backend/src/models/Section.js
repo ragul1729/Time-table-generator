@@ -6,4 +6,4 @@ const sectionSchema = new mongoose.Schema({
     Duration : Number
 });
 
-module.exports = mongoose.model("Section". sectionSchema);
+module.exports = mongoose.model("Section", sectionSchema);

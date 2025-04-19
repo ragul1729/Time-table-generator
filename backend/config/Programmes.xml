@@ -15,19 +15,25 @@
         </Branches>
     </Degree>
 
-    <Degree name="M.E">
-        <Branch>Computer Science and Engineering</Branch>
-        <Branch>Control Systems</Branch>
-        <Branch>Embedded and Real-Time Systems</Branch>
-        <Branch>Engineering Design</Branch>
-        <Branch>VLSI Design</Branch>
+    <Degree>
+        <Name>M.E</Name>
+        <Branches>
+            <Branch>Computer Science and Engineering</Branch>
+            <Branch>Control Systems</Branch>
+            <Branch>Embedded and Real-Time Systems</Branch>
+            <Branch>Engineering Design</Branch>
+            <Branch>VLSI Design</Branch>
+        </Branches>
     </Degree>
 
-    <Degree name="M.Sc">
-        <Branch>Software Systems</Branch>
-        <Branch>Theoretical Computer Science</Branch>
-        <Branch>Data Science</Branch>
-        <Branch>Cyber Security</Branch>
+    <Degree>
+        <Name>M.Sc</Name>
+        <Branches>
+            <Branch>Software Systems</Branch>
+            <Branch>Theoretical Computer Science</Branch>
+            <Branch>Data Science</Branch>
+            <Branch>Cyber Security</Branch>
+        </Branches>
     </Degree>
 </Programmes>
 

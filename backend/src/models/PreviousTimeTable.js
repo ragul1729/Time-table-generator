@@ -7,4 +7,4 @@ const PreviousTimeTableSchema = new mongoose.Schema({
     lastUpdated : Date
 })
 
-module.exports = mongoose.model("PreviousTimeTable", timeTableSchema);
+module.exports = mongoose.model("PreviousTimeTable", PreviousTimeTableSchema);
