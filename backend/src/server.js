@@ -3,6 +3,7 @@ const app = express();
 const cors = require('cors');
 const { readProgrammesXml } = require('./utils/ProgrammesXmlHandler');
 const { setProgrammes } = require('./utils/configStore');
+const { connectDB } = require("./utils/db");
 
 const courseRoutes = require("./routes/courseRoutes");
 const lectureSlotRoutes = require("./routes/lectureSlotRoutes");
@@ -26,6 +27,7 @@ app.use("/previoustimetables", previousTimeTableRoutes)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
+connectDB(); 
 
 const programmesXml = async () => {
   const Programmes= await readProgrammesXml('./config/Programmes.xml');
