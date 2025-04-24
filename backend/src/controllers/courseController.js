@@ -10,9 +10,12 @@ const getCourse = (req, res) => {
     return course;
 };
 
-const createCourse = (req, res) => {
-    const newCourse = courseService.createCourse(req.body);
-    res.status(201).json(newCourse);
+const createCourse = async (req, res) => {
+    const courseData = req.body;
+    console.log("Course data received in backend: " ,courseData);
+    const newCourse = await courseService.createCourse(courseData);
+    console.log(newCourse);
+    return res.status(201).json(newCourse);
 };
 
 const updateCourse = async (req, res) => {

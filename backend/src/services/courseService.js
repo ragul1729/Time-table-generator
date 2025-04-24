@@ -9,6 +9,7 @@ const getCourse = async () => {
 }
 
 const createCourse = async (data) => {
+    console.log("Inside course service: ", data);
     return await Course.create(data);
 }
 
