@@ -9,8 +9,14 @@ const getCourse = async () => {
 }
 
 const createCourse = async (data) => {
-    console.log("Inside course service: ", data);
-    return await Course.create(data);
+    try {
+        console.log("Inside course service: ", data);
+        const newCourse = await Course.create(data);
+        return newCourse;
+    } catch(err) {
+        console.log("Error while creating course : ", err);
+        throw err;
+    }
 }
 
 const updateCourse = async (id, data) => {

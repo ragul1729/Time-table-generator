@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import './index.css';
@@ -22,12 +23,14 @@ const AddCourse = () => {
   const onSubmitForm = async (courseData) => {
     //e.preventDefault();
     try{
-      console.log("Course Added:", courseData);
-      const response = axios.post("http://localhost:3000/courses", courseData);
+      const response = await axios.post("http://localhost:3000/courses", courseData);
       console.log(response.data);
+      toast.success("Course added successfully!");
+      console.log("Course Added:", courseData);
     }
     catch(error){
       console.log("Post failed for adding course : ", error);
+      toast.error("Something went wrong!");
     }
      //Add API call or state update logic here
   };
@@ -73,6 +76,7 @@ const AddCourse = () => {
               </div>
           </form>
       </div>
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };
