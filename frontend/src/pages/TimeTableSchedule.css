@@ -43,3 +43,13 @@
     border-radius: 4px;
   }
   
+  .download-btn {
+  background-color: black;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  }

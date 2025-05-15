@@ -1,7 +1,13 @@
 const Course = require('../models/Course');
 
 const getAllCourses = async () => {
-    return await Course.find();
+    try{
+        const courses = await Course.find();
+        return courses;
+    } catch(err){
+        console.log("Error while fetching course : ", err);
+        throw err;
+    }
 }
 
 const getCourse = async () => {

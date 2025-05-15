@@ -14,6 +14,7 @@ createRoot(document.getElementById('root')).render(
   <BrowserRouter>
     {/* <StrictMode> */}
         <Routes>
+          <Route path='/' element={<HomePage />} />
           <Route path="/home" element={<HomePage/>}/>
           <Route path="/degreebranch" element={<DegreeBranchSelection/>}/>
           <Route path="/addcourse" element={<AddCourse/>}/>

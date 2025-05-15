@@ -1,28 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import './TimeTableSchedule.css';
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import Sidebar from "../components/Sidebar";
+import dayjs from 'dayjs';
 
-const timeSlots = [
-  "08:30", "09:20", "10:10", "11:00", "11:50",
-  "12:10", // Lunch start
-  "13:40", "14:30", "15:20", "16:10"
-];
+// const timeSlots = [
+//   "08:30", "09:20", "10:10", "11:00", "11:50",
+//   "12:10", // Lunch start
+//   "13:40", "14:30", "15:20", "16:10"
+// ];
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
-const initialSchedule = {
-  Monday:    { "08:30": "CS101", "09:20": "MA101", "10:10": "", "11:00": "PH101", "11:50": "", "13:40": "CS101" },
-  Tuesday:   { "08:30": "", "09:20": "PH101", "10:10": "CS101", "11:00": "", "11:50": "MA101", "13:40": "" },
-  Wednesday: { "08:30": "MA101", "09:20": "", "10:10": "CS101", "11:00": "PH101", "11:50": "", "13:40": "" },
-  Thursday:  { "08:30": "", "09:20": "CS101", "10:10": "", "11:00": "MA101", "11:50": "PH101", "13:40": "" },
-  Friday:    { "08:30": "PH101", "09:20": "", "10:10": "MA101", "11:00": "", "11:50": "CS101", "13:40": "" }
-};
+
+// const initialSchedule = {
+//   Monday:    { "08:30": "CS101", "09:20": "MA101", "10:10": "", "11:00": "PH101", "11:50": "", "13:40": "CS101" },
+//   Tuesday:   { "08:30": "", "09:20": "PH101", "10:10": "CS101", "11:00": "", "11:50": "MA101", "13:40": "" },
+//   Wednesday: { "08:30": "MA101", "09:20": "", "10:10": "CS101", "11:00": "PH101", "11:50": "", "13:40": "" },
+//   Thursday:  { "08:30": "", "09:20": "CS101", "10:10": "", "11:00": "MA101", "11:50": "PH101", "13:40": "" },
+//   Friday:    { "08:30": "PH101", "09:20": "", "10:10": "MA101", "11:00": "", "11:50": "CS101", "13:40": "" }
+// };
 
 const availableColors = [
   'red', 'green', 'blue', 'yellow', 'orange', 'pink', 'purple', 'cyan'
 ];
 
 const TimeTableSchedule = () => {
+
+  const location = useLocation();
+  const tableRef = useRef();
+
+  let { timeOptions, timetable } = location.state || {};
+
+  //console.log(timeOptions);
+  timeOptions = timeOptions.map(d => dayjs(d.$d).format('HH:mm'));
+  console.log(timetable);
+
+  const initialSchedule = days.reduce((acc, day) => {
+    acc[day] = timeOptions.reduce((slotAcc, time) => {
+      slotAcc[time] = ""; // empty cell
+      return slotAcc;
+    }, {});
+    return acc;
+  }, {});
+
+  timetable.forEach(({ day, startTime, course }) => {
+    //console.log( day, startTime, course );
+    if (initialSchedule[day] && initialSchedule[day][dayjs(startTime.$d).format('HH:mm')] !== undefined) {
+      initialSchedule[day][dayjs(startTime.$d).format('HH:mm')] = course.courseCode;
+      //console.log("Inside for Each");
+    }
+  });
+  //console.log(initialSchedule);
+
+  const getCourseCode = (day, time) => {
+    const slot = timetable.find(
+      (t) => t.day === day && t.startTime === time
+    );
+    return slot ? slot.courseCode : "";
+  };
+  
   const [schedule, setSchedule] = useState(initialSchedule);
   const [colors, setColors] = useState({});
   const [showPopup, setShowPopup] = useState(false);
@@ -89,15 +128,31 @@ const TimeTableSchedule = () => {
     setShowPopup(false);
   };
 
+   const downloadPDF = async () => {
+    const element = tableRef.current;
+    const canvas = await html2canvas(element);
+    const imageData = canvas.toDataURL("image/png");
+
+    const pdf = new jsPDF("landscape", "pt", "a4");
+    const imgProps = pdf.getImageProperties(imageData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+    pdf.addImage(imageData, "PNG", 20, 20, pdfWidth - 40, pdfHeight);
+    pdf.save("timetable.pdf");
+  };
+
   return (
     <div className="schedule-container">
+
       <Sidebar />
-      <table className="schedule-table">
+  
+      <table className="schedule-table" ref={tableRef}>
         <thead>
           <tr>
             <th>Day / Time</th>
-            {timeSlots.map(time => (
-              <th key={time}>{time === "12:10" ? "Lunch Break" : time}</th>
+            {timeOptions.map(time => (
+              <th key={time}>{time}</th>
             ))}
           </tr>
         </thead>
@@ -105,9 +160,9 @@ const TimeTableSchedule = () => {
           {days.map(day => (
             <tr key={day}>
               <th>{day}</th>
-              {timeSlots.map(time => {
+              {timeOptions.map(time => {
                 const cell = schedule[day]?.[time] || "";
-                const course = typeof cell === "string" ? cell : cell.code;
+                const course = getCourseCode(day, time);//typeof cell === "string" ? cell : cell.code;
                 const color = typeof cell === "object" ? cell.color : colors[course];
                 const style = {
                   backgroundColor: color || 'white',
@@ -120,7 +175,7 @@ const TimeTableSchedule = () => {
                     style={style}
                     onDoubleClick={() => handleDoubleClick(cell, day, time)}
                   >
-                    {course}
+                    {initialSchedule[day][time]}
                   </td>
                 );
               })}
@@ -128,6 +183,10 @@ const TimeTableSchedule = () => {
           ))}
         </tbody>
       </table>
+
+      <button onClick={downloadPDF} className="download-btn">
+        Download as PDF
+      </button>
 
       {showPopup && (
         <div className="popup">

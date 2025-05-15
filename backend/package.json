@@ -17,6 +17,8 @@
     "express": "^5.1.0",
     "express-session": "^1.18.1",
     "fs": "^0.0.1-security",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.1",
     "mongoose": "^8.8.2",
     "xml2js": "^0.6.2"
   },

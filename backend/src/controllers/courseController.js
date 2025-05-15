@@ -1,8 +1,13 @@
 const courseService = require("../services/courseService");
 
-const getAllCourses = (req, res) => {
-    const courses = courseService.getAllCourses();
-    return courses;
+const getAllCourses = async (req, res) => {
+    try {
+        const courses = await courseService.getAllCourses();
+        res.status(201).json(courses);
+    } catch(err) {
+        console.log(err);
+        res.status(500).json({ error: 'Error while fetching courses' });
+    }
 };
 
 const getCourse = (req, res) => {

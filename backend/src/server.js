@@ -10,6 +10,7 @@ const lectureSlotRoutes = require("./routes/lectureSlotRoutes");
 const sectionRoutes = require("./routes/sectionRoutes");
 const previousTimeTableRoutes = require("./routes/previousTimeTableRoutes");
 const programmeRoutes = require("./routes/programmeRoutes");
+const timetableRoutes = require("./routes/timetableRoutes");
 
 app.use(express.json());
 
@@ -23,6 +24,7 @@ app.use("/lectureslots", lectureSlotRoutes);
 app.use("/sections", sectionRoutes);
 app.use("/courses", courseRoutes);
 app.use("/previoustimetables", previousTimeTableRoutes)
+app.use("/timetable", timetableRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
