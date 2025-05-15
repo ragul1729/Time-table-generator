@@ -4,19 +4,23 @@ import "./DegreeBranchSelection.css";
 import Sidebar from "../components/Sidebar";
 const DegreeBranchSelection = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
-  const [degrees, setDegrees] = useState([]);
-  const [branches, setBranches] = useState([]);
+  const [selectedDegree, setSelectedDegree] = useState('');
+  const [selectedBranch, setSelectedBranch] = useState('');
+  const [programmes, setProgrammes] = useState([]);
+  const [branchesForSelectedDegree, setBranchesForSelectedDegree] = useState([]);
 
   useEffect(() => {
     const fetchProgrammes = async() => {
       try{
         const { data } = await axios.get("http://localhost:3000/programmes");
-        console.log(data);
-        setDegrees(data["degrees"].flatMap(degree => degree[0]));
-        console.log(degrees);
-        const branches = data["degreesAndBranches"].flatMap(degree => degree.branches);
-        setBranches(branches);
-        console.log(branches);
+        console.log(data["degreesAndBranches"]);
+        //setDegrees(data["degrees"].flatMap(degree => degree[0]));
+        //console.log(degrees);
+        //const branches = data["degreesAndBranches"].flatMap(degree => degree.branches);
+        //setBranches(branches);
+        //console.log(branches);
+        setProgrammes(data["degreesAndBranches"]);
+        console.log(programmes);
       }
       catch(error){
         console.log("error while fetching Programmesdata", error);
@@ -29,13 +33,25 @@ const DegreeBranchSelection = () => {
     setOpenDropdown(openDropdown === dropdown ? null : dropdown);
   };
 
-  const handleSelect = (dropdown, value) => {
-    if (dropdown === "degree") {
-      setSelectedDegree(value);
-    } else if (dropdown === "branch") {
-      setSelectedBranch(value);
+  // const handleSelect = (dropdown, value) => {
+  //   if (dropdown === "degree") {
+  //     setSelectedDegree(value);
+  //   } else if (dropdown === "branch") {
+  //     setSelectedBranch(value);
+  //   }
+  //   setOpenDropdown(null); 
+  // };
+
+  const handleDegreeChange = (e) => {
+    const selected = e.target.value
+    setSelectedDegree(selected);
+    const degreeObj = programmes.find(p => p.name[0] === selected);
+    if (degreeObj) {
+      setBranchesForSelectedDegree(degreeObj.branches);
+    } else {
+      setBranchesForSelectedDegree([]);
     }
-    setOpenDropdown(null); // Close dropdown after selection
+    console.log(degreeObj);
   };
 
   return (
@@ -48,9 +64,9 @@ const DegreeBranchSelection = () => {
           Select degree
         </div>
         {openDropdown === "degree" && (
-          <select className="dropdown-content" required>
+          <select className="dropdown-content" value={selectedDegree} onChange={handleDegreeChange} required>
             {
-              degrees.map(degree => <option key={degree}>{degree}</option>)
+              programmes.map((prog, idx) => <option key={idx} value={prog.name}>{prog.name}</option>)
             }
           </select>
         )}
@@ -63,9 +79,9 @@ const DegreeBranchSelection = () => {
           Select branch
         </div>
         {openDropdown === "branch" && (
-          <select className="dropdown-content" required>
+          <select className="dropdown-content" value={selectedBranch} onChange={(e) => setSelectedBranch(e.target.value)} required>
             {
-              branches.map(branch => <option key={branch}>{branch}</option>)
+              branchesForSelectedDegree.map((branch, idx) => <option key={idx} value={branch}>{branch}</option>)
             }
           </select> 
         )}
