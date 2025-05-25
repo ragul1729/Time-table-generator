@@ -9,7 +9,7 @@ const Sidebar = () => {
       <button className="sidebar-button" onClick={ () => navigate("/degreebranch") }>Degree</button>
       <button className="sidebar-button" onClick={ () => navigate("/addcourse") }>Course</button>
       <button className="sidebar-button" onClick={ () => navigate("/schedule") }>Schedule</button>
-      <button className="sidebar-button" onClick={ () => navigate("/TimeTable") }>View</button>
+      <button className="sidebar-button" onClick={ () => navigate("/PreviousTimeTable") }>View</button>
     </div>
   );
 };

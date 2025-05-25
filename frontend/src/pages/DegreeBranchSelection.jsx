@@ -65,6 +65,9 @@ const DegreeBranchSelection = () => {
         </div>
         {openDropdown === "degree" && (
           <select className="dropdown-content" value={selectedDegree} onChange={handleDegreeChange} required>
+              <option value="" disabled hidden>
+                -- Select a degree --
+              </option>
             {
               programmes.map((prog, idx) => <option key={idx} value={prog.name}>{prog.name}</option>)
             }
@@ -80,6 +83,9 @@ const DegreeBranchSelection = () => {
         </div>
         {openDropdown === "branch" && (
           <select className="dropdown-content" value={selectedBranch} onChange={(e) => setSelectedBranch(e.target.value)} required>
+            <option value="" disabled hidden>
+              -- Select a branch --
+            </option>
             {
               branchesForSelectedDegree.map((branch, idx) => <option key={idx} value={branch}>{branch}</option>)
             }

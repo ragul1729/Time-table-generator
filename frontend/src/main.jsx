@@ -20,6 +20,7 @@ createRoot(document.getElementById('root')).render(
           <Route path="/addcourse" element={<AddCourse/>}/>
           <Route path="/schedule" element={<TimetableForm/>}/>
           <Route path="/TimeTable" element={<TimeTableSchedule/>}/>
+          <Route path='PreviousTimeTable' element={<PreviousTimeTables />} />
         </Routes>
     {/* </StrictMode> */}
   </BrowserRouter>

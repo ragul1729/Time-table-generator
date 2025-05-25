@@ -7,6 +7,10 @@ const saveTimetable = async (entries) => {
   return await newTable.save();
 };
 
+const getAllTimeTables = async () => {
+  return await TimeTable.find({});
+};
+
 module.exports = {
-  saveTimetable,
+  saveTimetable, getAllTimeTables
 };

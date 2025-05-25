@@ -5,6 +5,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import Sidebar from "../components/Sidebar";
 import dayjs from 'dayjs';
+import { useEffect } from 'react';
 
 // const timeSlots = [
 //   "08:30", "09:20", "10:10", "11:00", "11:50",
@@ -48,8 +49,8 @@ const TimeTableSchedule = () => {
 
   timetable.forEach(({ day, startTime, course }) => {
     //console.log( day, startTime, course );
-    if (initialSchedule[day] && initialSchedule[day][dayjs(startTime.$d).format('HH:mm')] !== undefined) {
-      initialSchedule[day][dayjs(startTime.$d).format('HH:mm')] = course.courseCode;
+    if (initialSchedule[day] && initialSchedule[day][startTime] !== undefined) {
+      initialSchedule[day][startTime] = course.courseCode;
       //console.log("Inside for Each");
     }
   });
@@ -62,6 +63,10 @@ const TimeTableSchedule = () => {
     return slot ? slot.courseCode : "";
   };
   
+  useEffect( () => {
+    console.log(localStorage.getItem("timetable"));
+  });
+
   const [schedule, setSchedule] = useState(initialSchedule);
   const [colors, setColors] = useState({});
   const [showPopup, setShowPopup] = useState(false);

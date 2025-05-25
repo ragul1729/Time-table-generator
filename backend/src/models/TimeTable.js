@@ -7,8 +7,8 @@ const timeSlotSchema = new mongoose.Schema({
     courseName: String,
     instructorName: String
   },
-  startTime: Date,
-  endTime: Date
+  startTime: String,
+  endTime: String
 });
 
 const timetableSchema = new mongoose.Schema({
@@ -16,7 +16,8 @@ const timetableSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  updatedAt: Date
 });
 
 module.exports = mongoose.model("TimeTable", timetableSchema);

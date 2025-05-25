@@ -23,6 +23,7 @@ const TimeTableForm = () => {
   '10:30',
   '11:20',
   '13:40',
+  '14:20',
   '15:30',
   '16:20'
   ].map(time => dayjs(time, 'HH:mm'));
@@ -32,7 +33,11 @@ const TimeTableForm = () => {
   const [selectedTime, setSelectedTime] = useState(timeOptions[0]);
   const [endtime, setEndtime] = useState(selectedTime.add(50, "minute"));
   const [courses, setCourses] = useState([]);
-  const [timetable, setTimetable] = useState([]);
+  const [timetable, setTimetable] = useState( () => {
+    const saved = localStorage.getItem("timetable");
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [lectureCount, setLectureCount] = useState({});
 
   const navigate = useNavigate();
 
@@ -42,6 +47,10 @@ const TimeTableForm = () => {
   useEffect(() => {
     setEndtime(selectedTime.add(50, "minute")); 
   }, [selectedTime]);
+
+  useEffect(() => {
+    localStorage.setItem("timetable", JSON.stringify(timetable));
+  }, [timetable]);
 
   useEffect(() => {
     const fetchCourses = async() => {
@@ -57,9 +66,24 @@ const TimeTableForm = () => {
     fetchCourses();
   }, []);
 
+  const formatDayjsToTime = (dayjsObj) => {
+    const date = dayjsObj.toDate();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+
   const handleAdd = () => {
 
     if (!selectedButton || !selectedCourse || !selectedTime) return;
+
+    const currentCount = lectureCount[selectedCourse.courseCode] || 0;
+    
+
+    if (currentCount >= selectedCourse.lecturesPerWeek) {
+      toast.error(`You cannot schedule more than ${selectedCourse.lecturesPerWeek} lectures for ${selectedCourse.courseCode}`);
+      return;
+    }
 
     // Check for overlap
     const overlap = timetable.some(entry => {
@@ -82,9 +106,14 @@ const TimeTableForm = () => {
     setTimetable(timetable => [...timetable, {
       day: selectedButton,
       course: selectedCourse,
-      startTime: selectedTime,
-      endTime: endtime
+      startTime: formatDayjsToTime(selectedTime),
+      endTime: formatDayjsToTime(endtime)
     }]);
+
+    setLectureCount(prev => ({
+      ...prev,
+      [selectedCourse.courseCode]: currentCount + 1
+    }));
 
     toast.success("Course added successfully!");
     setSelectedCourse("");
@@ -101,11 +130,11 @@ const TimeTableForm = () => {
         courseName: item.course.courseName,
         instructorName: item.course.instructorName
       },
-      startTime: item.startTime.toDate(), // Convert dayjs to Date
-      endTime: item.endTime.toDate()
+      startTime: item.startTime, 
+      endTime: item.endTime
     }));
-
-    await axios.post("http://localhost:3000/timetable", {timetable : formattedTimetable });
+    console.log(formattedTimetable);
+    await axios.post("http://localhost:3000/timetables", {timetable : formattedTimetable});
     alert("Timetable saved successfully!");
     } catch (err) {
     console.error("Error saving timetable:", err);
@@ -115,7 +144,14 @@ const TimeTableForm = () => {
 
   const handleClick = async () => {
     await handleGenerateTimetable(); 
-    navigate("/TimeTable", {state:{timeOptions, timetable }});
+    navigate("/TimeTable", {state:{timeOptions, timetable}});
+  };
+
+  const handleClearTimetable = () => {
+    localStorage.removeItem("timetable"); 
+    setLectureCount({});
+    setTimetable([]);                    
+    toast.success("Timetable cleared successfully!");
   };
 
 
@@ -132,16 +168,19 @@ const TimeTableForm = () => {
         ))}
       </div>
       <div className="dropdown">
-          <button>
-              <i className="fas fa-cog"></i>
-              <span>Select Course</span>
-          </button>
-          <select className="dropdown-content" value={JSON.stringify(selectedCourse)} onChange={ (e)=> {setSelectedCourse(JSON.parse(e.target.value))} } required>
-            {courses.map(course => <option key={course.courseCode} value={JSON.stringify(course)}>{course.courseName}</option>)}
-          </select>
+        <button>
+            <i className="fas fa-cog"></i>
+            <span>Select Course</span>
+        </button>
+        <select className="dropdown-content" value={JSON.stringify(selectedCourse)} onChange={ (e)=> {setSelectedCourse(JSON.parse(e.target.value))} } required>
+          <option value="" disabled>
+            -- Select a course --
+          </option>
+          {courses.map(course => <option key={course.courseCode} value={JSON.stringify(course)}>{course.courseName}</option>)}
+        </select>
       </div>
       <div className="input-group">
-        {selectedCourse != "ADD BREAK" ?
+        {/* {selectedCourse != "ADD BREAK" ?
           <div>
             <label htmlFor="hours">No. of hours</label>
             <input type="text" id="hours"  />
@@ -151,7 +190,7 @@ const TimeTableForm = () => {
             <label htmlFor="break">Break</label>
             <input type="text" id="break"  />
           </div> 
-        }
+        } */}
       </div>
       <div className="time-group">
           <div>
@@ -191,6 +230,7 @@ const TimeTableForm = () => {
       </div>
       <div className="action-group">
           <button disabled={isAddDisabled} onClick={handleAdd}>Add</button>
+          <button style={{backgroundColor : "purple"}} onClick={handleClearTimetable}>Clear Timetable</button>
           <button onClick={handleClick}>Generate Timetable</button>
       </div>
       <ToastContainer position="top-right" autoClose={3000} />
