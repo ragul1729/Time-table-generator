@@ -12,12 +12,15 @@ const timeSlotSchema = new mongoose.Schema({
 });
 
 const timetableSchema = new mongoose.Schema({
+  name : String,
   entries: [timeSlotSchema],
   createdAt: {
     type: Date,
     default: Date.now
   },
-  updatedAt: Date
+  updatedAt: Date,
+  degree : String, 
+  branch : String
 });
 
 module.exports = mongoose.model("TimeTable", timetableSchema);

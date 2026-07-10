@@ -10,6 +10,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { Autocomplete } from "@mui/material";
 import dayjs from "dayjs";
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -17,6 +18,8 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const TimeTableForm = () => {
 
+  dayjs.extend(customParseFormat);
+  
   const timeOptions = [
   '08:30',
   '09:20',
@@ -87,13 +90,12 @@ const TimeTableForm = () => {
 
     // Check for overlap
     const overlap = timetable.some(entry => {
-
       return (
         entry.day === selectedButton &&
-        ((selectedTime.isAfter(entry.startTime) && selectedTime.isBefore(entry.endTime)) ||
-         (endtime.isAfter(entry.startTime) && endtime.isBefore(entry.endTime)) ||
-         (selectedTime.isSame(entry.startTime) || endtime.isSame(entry.endTime))) ||
-         (!selectedTime.isAfter(openingTime) || !selectedTime.isBefore(closeTime))
+        ((selectedTime.isAfter(dayjs(entry.startTime, "HH:mm")) && selectedTime.isBefore(dayjs(entry.endTime, "HH:mm"))) ||
+         (endtime.isAfter(dayjs(entry.startTime, "HH:mm")) && endtime.isBefore(dayjs(entry.endTime, "HH:mm"))) ||
+         (selectedTime.isSame(dayjs(entry.startTime, "HH:mm")) || endtime.isSame(dayjs(entry.endTime, "HH:mm"))) ||
+         (!selectedTime.isAfter(dayjs(openingTime, "HH:mm")) || !selectedTime.isBefore(dayjs(closeTime, "HH:mm"))))
       );
     });
 
@@ -121,29 +123,29 @@ const TimeTableForm = () => {
     console.log(timetable);
   };
 
-  const handleGenerateTimetable = async () => {
-  try {
-      const formattedTimetable = timetable.map(item => ({
-      day: item.day,
-      course: {
-        courseCode: item.course.courseCode,
-        courseName: item.course.courseName,
-        instructorName: item.course.instructorName
-      },
-      startTime: item.startTime, 
-      endTime: item.endTime
-    }));
-    console.log(formattedTimetable);
-    await axios.post("http://localhost:3000/timetables", {timetable : formattedTimetable});
-    alert("Timetable saved successfully!");
-    } catch (err) {
-    console.error("Error saving timetable:", err);
-    alert("Failed to save timetable.");
-    }
-  };
+  // const handleGenerateTimetable = async () => {
+  // try {
+  //     const formattedTimetable = timetable.map(item => ({
+  //     day: item.day,
+  //     course: {
+  //       courseCode: item.course.courseCode,
+  //       courseName: item.course.courseName,
+  //       instructorName: item.course.instructorName
+  //     },
+  //     startTime: item.startTime, 
+  //     endTime: item.endTime
+  //   }));
+  //   console.log(formattedTimetable);
+  //   await axios.post("http://localhost:3000/timetables", {timetable : formattedTimetable});
+  //   alert("Timetable saved successfully!");
+  //   } catch (err) {
+  //   console.error("Error saving timetable:", err);
+  //   alert("Failed to save timetable.");
+  //   }
+  // };
 
   const handleClick = async () => {
-    await handleGenerateTimetable(); 
+    //await handleGenerateTimetable(); 
     navigate("/TimeTable", {state:{timeOptions, timetable}});
   };
 

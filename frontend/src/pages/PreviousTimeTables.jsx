@@ -19,31 +19,31 @@ const PreviousTimeTables = () => {
     .catch(err => console.error("Error fetching timetables:", err));
   }, []);
 
-  const handleCellClick = (dayIndex, periodIndex) => {
-    const colorIndex = Math.floor(Math.random() * colors.length);
-    const newColor = colors[colorIndex];
+  // const handleCellClick = (dayIndex, periodIndex) => {
+  //   const colorIndex = Math.floor(Math.random() * colors.length);
+  //   const newColor = colors[colorIndex];
 
-    const updatedTable = table.map((row, rIndex) =>
-      rIndex === dayIndex
-        ? row.map((cell, cIndex) =>
-            cIndex === periodIndex ? { ...cell, color: newColor } : cell
-          )
-        : row
-    );
+  //   const updatedTable = table.map((row, rIndex) =>
+  //     rIndex === dayIndex
+  //       ? row.map((cell, cIndex) =>
+  //           cIndex === periodIndex ? { ...cell, color: newColor } : cell
+  //         )
+  //       : row
+  //   );
 
-    setTable(updatedTable);
-  };
+  //   setTable(updatedTable);
+  // };
 
-  const downloadPDF = () => {
-    const input = document.getElementById("schedule-table");
+  // const downloadPDF = () => {
+  //   const input = document.getElementById("schedule-table");
 
-    html2canvas(input).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      pdf.addImage(imgData, "PNG", 10, 10, 190, 0);
-      pdf.save("schedule.pdf");
-    });
-  };
+  //   html2canvas(input).then((canvas) => {
+  //     const imgData = canvas.toDataURL("image/png");
+  //     const pdf = new jsPDF("p", "mm", "a4");
+  //     pdf.addImage(imgData, "PNG", 10, 10, 190, 0);
+  //     pdf.save("schedule.pdf");
+  //   });
+  // };
 
   return (
     <div className="time-table">
@@ -107,10 +107,10 @@ const PreviousTimeTables = () => {
                   {timetables.map((table, index) => (
                     <tr key={table._id}>
                       <td>{index + 1}</td>
-                      <td>{table._id || "N/A"}</td>
+                      <td><a href={`/user/${table._id}`} target="_blank" rel="noopener noreferrer">{table.name}</a></td>
                       <td>{table.degree || "N/A"}</td>
                       <td>{table.branch || "N/A"}</td>
-                      {/* <td>{new Date(table.lastUpdated).toLocaleString()}</td> */}
+                      <td>{new Date(table.createdAt).toLocaleString()}</td>
                     </tr>
                   ))}
               </tbody>

@@ -5,7 +5,10 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import Sidebar from "../components/Sidebar";
 import dayjs from 'dayjs';
+import axios from 'axios';
 import { useEffect } from 'react';
+import { toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 // const timeSlots = [
 //   "08:30", "09:20", "10:10", "11:00", "11:50",
@@ -72,6 +75,34 @@ const TimeTableSchedule = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState("");
   const [colorOptions, setColorOptions] = useState(availableColors);
+  const [showModal, setShowModal] = useState(false);
+  const [scheduleName, setScheduleName] = useState("");
+
+  const handleSaveClick = () => {
+    setShowModal(true);
+  };
+
+  const handleModalOk = async () => {
+    if (!scheduleName.trim()) {
+      toast.error("Name cannot be empty");
+      return;
+    }
+
+    try {
+      const response = await axios.post("http://localhost:3000/timetables", {
+        name: scheduleName,
+        timetable : timetable,
+        degree : localStorage.getItem("Degree"),
+        branch : localStorage.getItem("Branch")
+      });
+      toast.success("Timetable saved successfully");
+      setShowModal(false);
+      setScheduleName("");
+    } catch (error) {
+      toast.error("Failed to save timetable");
+      console.error("Save error:", error);
+    }
+  };
 
   const handleDoubleClick = (cell, day, time) => {
     if (!cell) return;
@@ -192,6 +223,31 @@ const TimeTableSchedule = () => {
       <button onClick={downloadPDF} className="download-btn">
         Download as PDF
       </button>
+
+      <div>
+      <button onClick={handleSaveClick} className="bg-blue-500 text-white px-4 py-2 rounded" style={{marginTop : 50}}>
+        Save
+      </button>
+
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Save Timetable</h2>
+            <input
+              type="text"
+              placeholder="Enter name"
+              value={scheduleName}
+              onChange={(e) => setScheduleName(e.target.value)}
+            />
+            <div className="modal-buttons">
+              <button onClick={handleModalOk}>OK</button>
+              <button onClick={() => setShowModal(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
 
       {showPopup && (
         <div className="popup">

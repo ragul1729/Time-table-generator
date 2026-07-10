@@ -45,6 +45,7 @@ const DegreeBranchSelection = () => {
   const handleDegreeChange = (e) => {
     const selected = e.target.value
     setSelectedDegree(selected);
+    localStorage.setItem("Degree", selected);
     const degreeObj = programmes.find(p => p.name[0] === selected);
     if (degreeObj) {
       setBranchesForSelectedDegree(degreeObj.branches);
@@ -82,13 +83,17 @@ const DegreeBranchSelection = () => {
           Select branch
         </div>
         {openDropdown === "branch" && (
-          <select className="dropdown-content" value={selectedBranch} onChange={(e) => setSelectedBranch(e.target.value)} required>
+          <select className="dropdown-content" value={selectedBranch} 
+            onChange={(e) => { setSelectedBranch(e.target.value); 
+                               localStorage.setItem('Branch', e.target.value); }} required>
+
             <option value="" disabled hidden>
               -- Select a branch --
             </option>
             {
               branchesForSelectedDegree.map((branch, idx) => <option key={idx} value={branch}>{branch}</option>)
             }
+
           </select> 
         )}
       </div>
