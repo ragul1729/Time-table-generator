@@ -37,9 +37,14 @@ const TimeTableSchedule = () => {
   const tableRef = useRef();
 
   let { timeOptions, timetable } = location.state || {};
+  timetable = timetable || [];
 
   //console.log(timeOptions);
-  timeOptions = timeOptions.map(d => dayjs(d.$d).format('HH:mm'));
+  const routeTimeOptions = timeOptions ? timeOptions.map(d => dayjs(d.$d).format('HH:mm')) : [];
+  timeOptions = [...new Set([
+    ...routeTimeOptions,
+    ...timetable.map(entry => entry.startTime)
+  ])].sort((a, b) => dayjs(a, "HH:mm").diff(dayjs(b, "HH:mm")));
   console.log(timetable);
 
   const initialSchedule = days.reduce((acc, day) => {
@@ -50,10 +55,15 @@ const TimeTableSchedule = () => {
     return acc;
   }, {});
 
+  const getEntryLabel = (course) => {
+    if (!course) return "";
+    return course.courseCode === "BREAK" ? course.courseName : course.courseCode;
+  };
+
   timetable.forEach(({ day, startTime, course }) => {
     //console.log( day, startTime, course );
     if (initialSchedule[day] && initialSchedule[day][startTime] !== undefined) {
-      initialSchedule[day][startTime] = course.courseCode;
+      initialSchedule[day][startTime] = getEntryLabel(course);
       //console.log("Inside for Each");
     }
   });
@@ -63,7 +73,7 @@ const TimeTableSchedule = () => {
     const slot = timetable.find(
       (t) => t.day === day && t.startTime === time
     );
-    return slot ? slot.course?.courseCode : "";
+    return slot ? getEntryLabel(slot.course) : "";
   };
   
   useEffect( () => {

@@ -3,12 +3,10 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import './TimeTableForm.css';
 import Sidebar from "../components/Sidebar";
-import TextField from '@mui/material/TextField';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { Autocomplete } from "@mui/material";
 import dayjs from "dayjs";
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { ToastContainer, toast } from 'react-toastify';
@@ -42,6 +40,8 @@ const TimeTableForm = () => {
   const [selectedTime, setSelectedTime] = useState(timeOptions[0]);
   const [durationHours, setDurationHours] = useState("1");
   const [durationError, setDurationError] = useState("");
+  const [breakName, setBreakName] = useState("");
+  const [breakNameError, setBreakNameError] = useState("");
   const [endtime, setEndtime] = useState(selectedTime.add(1, "hour"));
   const [courses, setCourses] = useState([]);
   const [timetable, setTimetable] = useState( () => {
@@ -111,6 +111,29 @@ const TimeTableForm = () => {
     setDurationError(validateDurationHours(singleDecimalValue));
   };
 
+  const validateBreakName = (value) => {
+    if (!value.trim()) {
+      return "Break name is required";
+    }
+
+    return "";
+  };
+
+  const handleCourseChange = (event) => {
+    const nextCourse = event.target.value ? JSON.parse(event.target.value) : "";
+    setSelectedCourse(nextCourse);
+
+    if (!nextCourse || nextCourse.courseCode !== breakOption.courseCode) {
+      setBreakName("");
+      setBreakNameError("");
+    }
+  };
+
+  const handleBreakNameChange = (event) => {
+    setBreakName(event.target.value);
+    setBreakNameError(validateBreakName(event.target.value));
+  };
+
   const handleAdd = () => {
 
     if (!selectedButton || !selectedCourse || !selectedTime) return;
@@ -124,6 +147,13 @@ const TimeTableForm = () => {
 
     const isBreak = selectedCourse.courseCode === breakOption.courseCode;
     const currentCount = lectureCount[selectedCourse.courseCode] || 0;
+
+    const breakNameValidationMessage = isBreak ? validateBreakName(breakName) : "";
+    if (breakNameValidationMessage) {
+      setBreakNameError(breakNameValidationMessage);
+      toast.error(breakNameValidationMessage);
+      return;
+    }
 
     if (!isBreak && currentCount >= selectedCourse.lecturesPerWeek) {
       toast.error(`You cannot schedule more than ${selectedCourse.lecturesPerWeek} lectures for ${selectedCourse.courseCode}`);
@@ -149,9 +179,16 @@ const TimeTableForm = () => {
       return;
     }
 
+    const scheduledCourse = isBreak
+      ? {
+          ...breakOption,
+          courseName: breakName.trim()
+        }
+      : selectedCourse;
+
     setTimetable(timetable => [...timetable, {
       day: selectedButton,
-      course: selectedCourse,
+      course: scheduledCourse,
       startTime: formatDayjsToTime(selectedTime),
       endTime: formatDayjsToTime(endtime)
     }]);
@@ -168,6 +205,8 @@ const TimeTableForm = () => {
     setSelectedTime(timeOptions[0]);
     setDurationHours("1");
     setDurationError("");
+    setBreakName("");
+    setBreakNameError("");
     console.log(timetable);
   };
 
@@ -206,6 +245,7 @@ const TimeTableForm = () => {
 
 
   const isAddDisabled = !selectedButton || !selectedCourse || !selectedTime;
+  const isBreakSelected = selectedCourse?.courseCode === breakOption.courseCode;
 
   return (
     <div className="degree-branch">
@@ -225,9 +265,7 @@ const TimeTableForm = () => {
         <select
           className="dropdown-content"
           value={selectedCourse ? JSON.stringify(selectedCourse) : ""}
-          onChange={(e) => {
-            setSelectedCourse(e.target.value ? JSON.parse(e.target.value) : "");
-          }}
+          onChange={handleCourseChange}
           required
         >
           <option value="" disabled>
@@ -236,6 +274,20 @@ const TimeTableForm = () => {
           <option value={JSON.stringify(breakOption)}>Add Break</option>
           {courses.map(course => <option key={course.courseCode} value={JSON.stringify(course)}>{course.courseName}</option>)}
         </select>
+      </div>
+      <div className="input-group duration-field">
+        <div>
+          <label htmlFor="breakName">Break name</label>
+          <input
+            type="text"
+            id="breakName"
+            placeholder="e.g. Lunch"
+            value={breakName}
+            onChange={handleBreakNameChange}
+            disabled={!isBreakSelected}
+          />
+          {breakNameError && <span className="field-error">{breakNameError}</span>}
+        </div>
       </div>
       <div className="input-group duration-field">
         <div>
@@ -254,29 +306,19 @@ const TimeTableForm = () => {
       <div className="time-group">
           <div>
               <h2>Start time</h2>
-                {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DemoContainer components={['TimePicker']}> 
-                <TimePicker label="Basic time picker" value={selectedTime} onChange={(newTime) => setSelectedTime(newTime)}
-                renderInput={(params) => <TextField {...params} />} />
-                </DemoContainer> 
-                </LocalizationProvider> */}
-
-                <Autocomplete
-                  options={timeOptions}
-                  sx={{width:250, marginTop:2}} 
-                  onChange={(event, newValue) => setSelectedTime(newValue)}
+                <TimePicker
+                  label="Start time"
                   value={selectedTime}
-                  getOptionLabel={(option) =>
-                    option ? option.format('hh:mm A') : ''
-                  }
-                  renderInput={(params) => (
-                    <TextField {...params} label="Select Time" />
-                  )}
-                  isOptionEqualToValue={(option, value) =>
-                    option && value ? option.format('HH:mm') === value.format('HH:mm') : false
-                  }
-                  
+                  onChange={(newTime) => {
+                    if (newTime) {
+                      setSelectedTime(newTime);
+                    }
+                  }}
                 />
+                </DemoContainer> 
+                </LocalizationProvider>
           </div>
           <div>
               <h2>End time</h2>
