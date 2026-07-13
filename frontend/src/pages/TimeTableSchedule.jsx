@@ -63,7 +63,7 @@ const TimeTableSchedule = () => {
     const slot = timetable.find(
       (t) => t.day === day && t.startTime === time
     );
-    return slot ? slot.courseCode : "";
+    return slot ? slot.course?.courseCode : "";
   };
   
   useEffect( () => {

@@ -19,6 +19,12 @@ import 'react-toastify/dist/ReactToastify.css';
 const TimeTableForm = () => {
 
   dayjs.extend(customParseFormat);
+
+  const breakOption = {
+    courseCode: "BREAK",
+    courseName: "Break",
+    instructorName: ""
+  };
   
   const timeOptions = [
   '08:30',
@@ -32,9 +38,11 @@ const TimeTableForm = () => {
   ].map(time => dayjs(time, 'HH:mm'));
 
   const [selectedButton, setSelectedButton] = useState("Monday");
-  const [selectedCourse, setSelectedCourse] = useState(undefined);
+  const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedTime, setSelectedTime] = useState(timeOptions[0]);
-  const [endtime, setEndtime] = useState(selectedTime.add(50, "minute"));
+  const [durationHours, setDurationHours] = useState("1");
+  const [durationError, setDurationError] = useState("");
+  const [endtime, setEndtime] = useState(selectedTime.add(1, "hour"));
   const [courses, setCourses] = useState([]);
   const [timetable, setTimetable] = useState( () => {
     const saved = localStorage.getItem("timetable");
@@ -48,8 +56,12 @@ const TimeTableForm = () => {
   const closeTime = dayjs('17:00', 'HH:mm');
 
   useEffect(() => {
-    setEndtime(selectedTime.add(50, "minute")); 
-  }, [selectedTime]);
+    const duration = Number(durationHours);
+
+    if (selectedTime && Number.isFinite(duration) && duration >= 1 && duration <= 5) {
+      setEndtime(selectedTime.add(duration * 60, "minute"));
+    }
+  }, [selectedTime, durationHours]);
 
   useEffect(() => {
     localStorage.setItem("timetable", JSON.stringify(timetable));
@@ -76,27 +88,59 @@ const TimeTableForm = () => {
     return `${hours}:${minutes}`;
   };
 
+  const validateDurationHours = (value) => {
+    if (!value) {
+      return "No. of hours is required";
+    }
+
+    const duration = Number(value);
+    if (!Number.isFinite(duration) || duration < 1 || duration > 5) {
+      return "No. of hours must be between 1 and 5";
+    }
+
+    return "";
+  };
+
+  const handleDurationChange = (event) => {
+    const numericValue = event.target.value.replace(/[^\d.]/g, "");
+    const singleDecimalValue = numericValue
+      .replace(/(\..*)\./g, "$1")
+      .replace(/^0+(?=\d)/, "");
+
+    setDurationHours(singleDecimalValue);
+    setDurationError(validateDurationHours(singleDecimalValue));
+  };
+
   const handleAdd = () => {
 
     if (!selectedButton || !selectedCourse || !selectedTime) return;
 
-    const currentCount = lectureCount[selectedCourse.courseCode] || 0;
-    
+    const durationValidationMessage = validateDurationHours(durationHours);
+    if (durationValidationMessage) {
+      setDurationError(durationValidationMessage);
+      toast.error(durationValidationMessage);
+      return;
+    }
 
-    if (currentCount >= selectedCourse.lecturesPerWeek) {
+    const isBreak = selectedCourse.courseCode === breakOption.courseCode;
+    const currentCount = lectureCount[selectedCourse.courseCode] || 0;
+
+    if (!isBreak && currentCount >= selectedCourse.lecturesPerWeek) {
       toast.error(`You cannot schedule more than ${selectedCourse.lecturesPerWeek} lectures for ${selectedCourse.courseCode}`);
       return;
     }
 
-    // Check for overlap
+    if (selectedTime.isBefore(openingTime) || endtime.isAfter(closeTime)) {
+      toast.error("Selected duration must fit between 08:00 and 17:00");
+      return;
+    }
+
     const overlap = timetable.some(entry => {
-      return (
-        entry.day === selectedButton &&
-        ((selectedTime.isAfter(dayjs(entry.startTime, "HH:mm")) && selectedTime.isBefore(dayjs(entry.endTime, "HH:mm"))) ||
-         (endtime.isAfter(dayjs(entry.startTime, "HH:mm")) && endtime.isBefore(dayjs(entry.endTime, "HH:mm"))) ||
-         (selectedTime.isSame(dayjs(entry.startTime, "HH:mm")) || endtime.isSame(dayjs(entry.endTime, "HH:mm"))) ||
-         (!selectedTime.isAfter(dayjs(openingTime, "HH:mm")) || !selectedTime.isBefore(dayjs(closeTime, "HH:mm"))))
-      );
+      if (entry.day !== selectedButton) return false;
+
+      const entryStart = dayjs(entry.startTime, "HH:mm");
+      const entryEnd = dayjs(entry.endTime, "HH:mm");
+      return selectedTime.isBefore(entryEnd) && endtime.isAfter(entryStart);
     });
 
     if (overlap) {
@@ -112,14 +156,18 @@ const TimeTableForm = () => {
       endTime: formatDayjsToTime(endtime)
     }]);
 
-    setLectureCount(prev => ({
-      ...prev,
-      [selectedCourse.courseCode]: currentCount + 1
-    }));
+    if (!isBreak) {
+      setLectureCount(prev => ({
+        ...prev,
+        [selectedCourse.courseCode]: currentCount + 1
+      }));
+    }
 
-    toast.success("Course added successfully!");
+    toast.success(isBreak ? "Break added successfully!" : "Course added successfully!");
     setSelectedCourse("");
     setSelectedTime(timeOptions[0]);
+    setDurationHours("1");
+    setDurationError("");
     console.log(timetable);
   };
 
@@ -174,25 +222,34 @@ const TimeTableForm = () => {
             <i className="fas fa-cog"></i>
             <span>Select Course</span>
         </button>
-        <select className="dropdown-content" value={JSON.stringify(selectedCourse)} onChange={ (e)=> {setSelectedCourse(JSON.parse(e.target.value))} } required>
+        <select
+          className="dropdown-content"
+          value={selectedCourse ? JSON.stringify(selectedCourse) : ""}
+          onChange={(e) => {
+            setSelectedCourse(e.target.value ? JSON.parse(e.target.value) : "");
+          }}
+          required
+        >
           <option value="" disabled>
             -- Select a course --
           </option>
+          <option value={JSON.stringify(breakOption)}>Add Break</option>
           {courses.map(course => <option key={course.courseCode} value={JSON.stringify(course)}>{course.courseName}</option>)}
         </select>
       </div>
-      <div className="input-group">
-        {/* {selectedCourse != "ADD BREAK" ?
-          <div>
-            <label htmlFor="hours">No. of hours</label>
-            <input type="text" id="hours"  />
-          </div>
-          :
-          <div>
-            <label htmlFor="break">Break</label>
-            <input type="text" id="break"  />
-          </div> 
-        } */}
+      <div className="input-group duration-field">
+        <div>
+          <label htmlFor="hours">No. of hours</label>
+          <input
+            type="text"
+            id="hours"
+            inputMode="decimal"
+            placeholder="1-5 hours"
+            value={durationHours}
+            onChange={handleDurationChange}
+          />
+          {durationError && <span className="field-error">{durationError}</span>}
+        </div>
       </div>
       <div className="time-group">
           <div>
