@@ -9,12 +9,66 @@
     text-align: center;
     margin-left: 170px;
   }
+
+  .timetable-details {
+    margin: 0 0 24px 170px;
+    max-width: 900px;
+  }
+
+  .timetable-details h1 {
+    margin-bottom: 8px;
+    text-align: left;
+  }
+
+  .timetable-details p {
+    margin: 4px 0;
+    color: #374151;
+  }
   
   .schedule-table th, .schedule-table td {
     border: 1px solid #ccc;
     padding: 10px;
     width: 50px;
     height: 50px;
+  }
+
+  .scheduled-cell {
+    min-width: 120px;
+  }
+
+  .course-cell {
+    background-color: #e0f2fe;
+  }
+
+  .break-cell {
+    background-color: #fef3c7;
+    border: 2px solid #f59e0b;
+  }
+
+  .schedule-entry {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.875rem;
+  }
+
+  .entry-title {
+    font-weight: 700;
+  }
+
+  .entry-time {
+    color: #374151;
+    font-size: 0.75rem;
+  }
+
+  .entry-duration {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background-color: rgba(255, 255, 255, 0.75);
+    color: #111827;
+    font-size: 0.75rem;
+    font-weight: 600;
   }
   
   .popup {
@@ -81,11 +135,17 @@
   margin-bottom: 10px;
 }
 
-.modal-content input {
+.modal-content input,
+.modal-content textarea {
   width: 100%;
   padding: 8px;
   margin-bottom: 15px;
   font-size: 16px;
+}
+
+.modal-content textarea {
+  min-height: 80px;
+  resize: vertical;
 }
 
 .modal-buttons button {

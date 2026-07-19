@@ -1,59 +1,61 @@
 import React, { useState, useEffect } from "react";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import './PreviousTimeTables.css';
 import Sidebar from '../components/Sidebar';
 import axios from "axios";
-
-const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-const periods = ["8:30-9:20", "9:30-10:20", "10:30-11:20", "11:30-12:20", "1:30-2:20", "2:30-3:20", "3:30-4:20"];
-
-const colors = ["bg-yellow-300", "bg-blue-300", "bg-red-300", "bg-green-300", "bg-purple-300", "bg-pink-300"];
+import { useNavigate } from "react-router-dom";
 
 const PreviousTimeTables = () => {
   const [timetables, setTimetables] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-  axios.get("http://localhost:3000/timetables")
-    .then(res => setTimetables(res.data))
-    .catch(err => console.error("Error fetching timetables:", err));
+    fetchTimetables();
   }, []);
 
-  // const handleCellClick = (dayIndex, periodIndex) => {
-  //   const colorIndex = Math.floor(Math.random() * colors.length);
-  //   const newColor = colors[colorIndex];
+  const fetchTimetables = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/timetables");
+      setTimetables(response.data);
+    } catch (err) {
+      console.error("Error fetching timetables:", err);
+    }
+  };
 
-  //   const updatedTable = table.map((row, rIndex) =>
-  //     rIndex === dayIndex
-  //       ? row.map((cell, cIndex) =>
-  //           cIndex === periodIndex ? { ...cell, color: newColor } : cell
-  //         )
-  //       : row
-  //   );
+  const handleView = (table) => {
+    navigate("/TimeTable", {
+      state: {
+        timetable: table.entries,
+        savedTimetable: table,
+        mode: "view"
+      }
+    });
+  };
 
-  //   setTable(updatedTable);
-  // };
+  const handleEdit = (table) => {
+    navigate("/schedule", {
+      state: {
+        timetable: table.entries,
+        savedTimetable: table,
+        mode: "edit"
+      }
+    });
+  };
 
-  // const downloadPDF = () => {
-  //   const input = document.getElementById("schedule-table");
+  const handleDelete = async (id) => {
+    const shouldDelete = window.confirm("Delete this timetable?");
 
-  //   html2canvas(input).then((canvas) => {
-  //     const imgData = canvas.toDataURL("image/png");
-  //     const pdf = new jsPDF("p", "mm", "a4");
-  //     pdf.addImage(imgData, "PNG", 10, 10, 190, 0);
-  //     pdf.save("schedule.pdf");
-  //   });
-  // };
+    if (!shouldDelete) return;
+
+    try {
+      await axios.delete(`http://localhost:3000/timetables/${id}`);
+      setTimetables(current => current.filter(table => table._id !== id));
+    } catch (err) {
+      console.error("Error deleting timetable:", err);
+    }
+  };
 
   return (
     <div className="time-table">
-      {/* <div className="sidebar">
-          <button>HOME</button>
-          <button>DEGREE</button>
-          <button>COURSE</button>
-          <button>SCHEDULE</button>
-          <button>VIEW</button>
-      </div> */}
       <Sidebar />
       
       <div className="main-content">
@@ -63,54 +65,38 @@ const PreviousTimeTables = () => {
                   <tr>
                       <th>No.</th>
                       <th>Name</th>
+                      <th>Class</th>
+                      <th>Section</th>
+                      <th>Description</th>
                       <th>Degree</th>
                       <th>Branch</th>
                       <th>Created</th>
+                      <th>Actions</th>
                   </tr>
               </thead>
               <tbody>
-                  {/* <tr>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                  </tr>
-                  <tr>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                  </tr>
-                  <tr>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                  </tr>
-                  <tr>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                  </tr>
-                  <tr>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                  </tr> */}
+                  {timetables.length === 0 && (
+                    <tr>
+                      <td colSpan="9">No timetables saved yet.</td>
+                    </tr>
+                  )}
                   {timetables.map((table, index) => (
                     <tr key={table._id}>
                       <td>{index + 1}</td>
-                      <td><a href={`/user/${table._id}`} target="_blank" rel="noopener noreferrer">{table.name}</a></td>
+                      <td>{table.name}</td>
+                      <td>{table.className || "N/A"}</td>
+                      <td>{table.section || "N/A"}</td>
+                      <td>{table.description || "N/A"}</td>
                       <td>{table.degree || "N/A"}</td>
                       <td>{table.branch || "N/A"}</td>
                       <td>{new Date(table.createdAt).toLocaleString()}</td>
+                      <td>
+                        <div className="table-actions">
+                          <button type="button" onClick={() => handleView(table)}>View</button>
+                          <button type="button" onClick={() => handleEdit(table)}>Edit</button>
+                          <button type="button" className="danger" onClick={() => handleDelete(table._id)}>Delete</button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
               </tbody>

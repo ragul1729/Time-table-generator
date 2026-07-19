@@ -7,7 +7,7 @@ import Sidebar from "../components/Sidebar";
 import dayjs from 'dayjs';
 import axios from 'axios';
 import { useEffect } from 'react';
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
 // const timeSlots = [
@@ -36,11 +36,16 @@ const TimeTableSchedule = () => {
   const location = useLocation();
   const tableRef = useRef();
 
-  let { timeOptions, timetable } = location.state || {};
+  let { timeOptions, timetable, savedTimetable: initialSavedTimetable, mode } = location.state || {};
   timetable = timetable || [];
+  const isViewMode = mode === "view";
 
   //console.log(timeOptions);
-  const routeTimeOptions = timeOptions ? timeOptions.map(d => dayjs(d.$d).format('HH:mm')) : [];
+  const routeTimeOptions = timeOptions
+    ? timeOptions
+        .map(d => dayjs(d.$d || d).format('HH:mm'))
+        .filter(time => time !== "Invalid Date")
+    : [];
   timeOptions = [...new Set([
     ...routeTimeOptions,
     ...timetable.map(entry => entry.startTime)
@@ -75,6 +80,26 @@ const TimeTableSchedule = () => {
     );
     return slot ? getEntryLabel(slot.course) : "";
   };
+
+  const getEntry = (day, time) => {
+    return timetable.find(
+      (t) => t.day === day && t.startTime === time
+    );
+  };
+
+  const getDurationLabel = (entry) => {
+    if (!entry) return "";
+
+    const start = dayjs(entry.startTime, "HH:mm");
+    const end = dayjs(entry.endTime, "HH:mm");
+    const totalMinutes = end.diff(start, "minute");
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    if (hours && minutes) return `${hours}h ${minutes}m`;
+    if (hours) return `${hours}h`;
+    return `${minutes}m`;
+  };
   
   useEffect( () => {
     console.log(localStorage.getItem("timetable"));
@@ -86,7 +111,11 @@ const TimeTableSchedule = () => {
   const [selectedCourse, setSelectedCourse] = useState("");
   const [colorOptions, setColorOptions] = useState(availableColors);
   const [showModal, setShowModal] = useState(false);
-  const [scheduleName, setScheduleName] = useState("");
+  const [savedTimetable, setSavedTimetable] = useState(initialSavedTimetable || null);
+  const [scheduleName, setScheduleName] = useState(savedTimetable?.name || "");
+  const [className, setClassName] = useState(savedTimetable?.className || "");
+  const [section, setSection] = useState(savedTimetable?.section || "");
+  const [description, setDescription] = useState(savedTimetable?.description || "");
 
   const handleSaveClick = () => {
     setShowModal(true);
@@ -98,16 +127,38 @@ const TimeTableSchedule = () => {
       return;
     }
 
+    if (!className.trim()) {
+      toast.error("Class cannot be empty");
+      return;
+    }
+
+    if (!section.trim()) {
+      toast.error("Section cannot be empty");
+      return;
+    }
+
+    const payload = {
+      name: scheduleName.trim(),
+      className: className.trim(),
+      section: section.trim(),
+      description: description.trim(),
+      timetable : timetable,
+      degree : localStorage.getItem("Degree") || savedTimetable?.degree,
+      branch : localStorage.getItem("Branch") || savedTimetable?.branch
+    };
+
     try {
-      const response = await axios.post("http://localhost:3000/timetables", {
-        name: scheduleName,
-        timetable : timetable,
-        degree : localStorage.getItem("Degree"),
-        branch : localStorage.getItem("Branch")
-      });
-      toast.success("Timetable saved successfully");
+      if (savedTimetable?._id) {
+        const response = await axios.put(`http://localhost:3000/timetables/${savedTimetable._id}`, payload);
+        setSavedTimetable(response.data);
+        toast.success("Timetable updated successfully");
+      } else {
+        const response = await axios.post("http://localhost:3000/timetables", payload);
+        setSavedTimetable(response.data);
+        toast.success("Timetable saved successfully");
+      }
+
       setShowModal(false);
-      setScheduleName("");
     } catch (error) {
       toast.error("Failed to save timetable");
       console.error("Save error:", error);
@@ -192,6 +243,16 @@ const TimeTableSchedule = () => {
     <div className="schedule-container">
 
       <Sidebar />
+
+      {savedTimetable && (
+        <div className="timetable-details">
+          <h1>{savedTimetable.name}</h1>
+          <p>
+            Class: {savedTimetable.className || "N/A"} | Section: {savedTimetable.section || "N/A"}
+          </p>
+          {savedTimetable.description && <p>{savedTimetable.description}</p>}
+        </div>
+      )}
   
       <table className="schedule-table" ref={tableRef}>
         <thead>
@@ -207,11 +268,13 @@ const TimeTableSchedule = () => {
             <tr key={day}>
               <th>{day}</th>
               {timeOptions.map(time => {
+                const entry = getEntry(day, time);
                 const cell = schedule[day]?.[time] || "";
                 const course = getCourseCode(day, time);//typeof cell === "string" ? cell : cell.code;
+                const isBreak = entry?.course?.courseCode === "BREAK";
                 const color = typeof cell === "object" ? cell.color : colors[course];
                 const style = {
-                  backgroundColor: color || 'white',
+                  backgroundColor: color || undefined,
                   cursor: course ? 'pointer' : 'default'
                 };
 
@@ -219,9 +282,16 @@ const TimeTableSchedule = () => {
                   <td
                     key={time}
                     style={style}
+                    className={entry ? `scheduled-cell ${isBreak ? "break-cell" : "course-cell"}` : ""}
                     onDoubleClick={() => handleDoubleClick(cell, day, time)}
                   >
-                    {initialSchedule[day][time]}
+                    {entry && (
+                      <div className="schedule-entry">
+                        <span className="entry-title">{initialSchedule[day][time]}</span>
+                        <span className="entry-time">{entry.startTime} - {entry.endTime}</span>
+                        <span className="entry-duration">{getDurationLabel(entry)}</span>
+                      </div>
+                    )}
                   </td>
                 );
               })}
@@ -235,22 +305,41 @@ const TimeTableSchedule = () => {
       </button>
 
       <div>
-      <button onClick={handleSaveClick} className="bg-blue-500 text-white px-4 py-2 rounded" style={{marginTop : 50}}>
-        Save
-      </button>
+      {!isViewMode && (
+        <button onClick={handleSaveClick} className="bg-blue-500 text-white px-4 py-2 rounded" style={{marginTop : 50}}>
+          {savedTimetable?._id ? "Save Changes" : "Save"}
+        </button>
+      )}
 
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h2>Save Timetable</h2>
+            <h2>{savedTimetable?._id ? "Update Timetable" : "Save Timetable"}</h2>
             <input
               type="text"
-              placeholder="Enter name"
+              placeholder="Timetable name"
               value={scheduleName}
               onChange={(e) => setScheduleName(e.target.value)}
             />
+            <input
+              type="text"
+              placeholder="Class"
+              value={className}
+              onChange={(e) => setClassName(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Section"
+              value={section}
+              onChange={(e) => setSection(e.target.value)}
+            />
+            <textarea
+              placeholder="Description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
             <div className="modal-buttons">
-              <button onClick={handleModalOk}>OK</button>
+              <button onClick={handleModalOk}>{savedTimetable?._id ? "Update" : "Save"}</button>
               <button onClick={() => setShowModal(false)}>Cancel</button>
             </div>
           </div>
@@ -274,6 +363,7 @@ const TimeTableSchedule = () => {
           </div>
         </div>
       )}
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };

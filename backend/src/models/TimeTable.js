@@ -13,6 +13,9 @@ const timeSlotSchema = new mongoose.Schema({
 
 const timetableSchema = new mongoose.Schema({
   name : String,
+  className: String,
+  section: String,
+  description: String,
   entries: [timeSlotSchema],
   createdAt: {
     type: Date,

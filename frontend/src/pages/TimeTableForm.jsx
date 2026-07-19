@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import './TimeTableForm.css';
 import Sidebar from "../components/Sidebar";
@@ -35,6 +35,11 @@ const TimeTableForm = () => {
   '16:20'
   ].map(time => dayjs(time, 'HH:mm'));
 
+  const navigate = useNavigate();
+  const location = useLocation();
+  const savedTimetable = location.state?.savedTimetable || null;
+  const initialTimetable = location.state?.timetable || null;
+
   const [selectedButton, setSelectedButton] = useState("Monday");
   const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedTime, setSelectedTime] = useState(timeOptions[0]);
@@ -45,12 +50,26 @@ const TimeTableForm = () => {
   const [endtime, setEndtime] = useState(selectedTime.add(1, "hour"));
   const [courses, setCourses] = useState([]);
   const [timetable, setTimetable] = useState( () => {
+    if (initialTimetable) {
+      return initialTimetable;
+    }
+
     const saved = localStorage.getItem("timetable");
     return saved ? JSON.parse(saved) : [];
   });
-  const [lectureCount, setLectureCount] = useState({});
+  const [lectureCount, setLectureCount] = useState(() => {
+    const sourceTimetable = initialTimetable || [];
 
-  const navigate = useNavigate();
+    return sourceTimetable.reduce((counts, entry) => {
+      const courseCode = entry.course?.courseCode;
+
+      if (courseCode && courseCode !== breakOption.courseCode) {
+        counts[courseCode] = (counts[courseCode] || 0) + 1;
+      }
+
+      return counts;
+    }, {});
+  });
 
   const openingTime = dayjs('08:00', 'HH:mm');
   const closeTime = dayjs('17:00', 'HH:mm');
@@ -232,8 +251,21 @@ const TimeTableForm = () => {
   // };
 
   const handleClick = async () => {
+    const hasScheduledCourse = timetable.some(entry => entry.course?.courseCode !== breakOption.courseCode);
+    if (!hasScheduledCourse) {
+      toast.error("Add at least one course before generating the timetable");
+      return;
+    }
+
     //await handleGenerateTimetable(); 
-    navigate("/TimeTable", {state:{timeOptions, timetable}});
+    navigate("/TimeTable", {
+      state: {
+        timeOptions,
+        timetable,
+        savedTimetable,
+        mode: savedTimetable ? "edit" : "create"
+      }
+    });
   };
 
   const handleClearTimetable = () => {
@@ -244,8 +276,27 @@ const TimeTableForm = () => {
   };
 
 
-  const isAddDisabled = !selectedButton || !selectedCourse || !selectedTime;
   const isBreakSelected = selectedCourse?.courseCode === breakOption.courseCode;
+  const hasValidDuration = !validateDurationHours(durationHours);
+  const hasValidBreakName = !isBreakSelected || !validateBreakName(breakName);
+  const isWithinWorkingHours = selectedTime && !selectedTime.isBefore(openingTime) && !endtime.isAfter(closeTime);
+  const hasTimeOverlap = selectedTime && timetable.some(entry => {
+    if (entry.day !== selectedButton) return false;
+
+    const entryStart = dayjs(entry.startTime, "HH:mm");
+    const entryEnd = dayjs(entry.endTime, "HH:mm");
+    return selectedTime.isBefore(entryEnd) && endtime.isAfter(entryStart);
+  });
+  const hasScheduledCourse = timetable.some(entry => entry.course?.courseCode !== breakOption.courseCode);
+  const isAddDisabled =
+    !selectedButton ||
+    !selectedCourse ||
+    !selectedTime ||
+    !hasValidDuration ||
+    !hasValidBreakName ||
+    !isWithinWorkingHours ||
+    hasTimeOverlap;
+  const isGenerateDisabled = !hasScheduledCourse;
 
   return (
     <div className="degree-branch">
@@ -332,7 +383,7 @@ const TimeTableForm = () => {
       <div className="action-group">
           <button disabled={isAddDisabled} onClick={handleAdd}>Add</button>
           <button style={{backgroundColor : "purple"}} onClick={handleClearTimetable}>Clear Timetable</button>
-          <button onClick={handleClick}>Generate Timetable</button>
+          <button disabled={isGenerateDisabled} onClick={handleClick}>Generate Timetable</button>
       </div>
       <ToastContainer position="top-right" autoClose={3000} />
     </div>

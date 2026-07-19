@@ -3,7 +3,6 @@ import axios from "axios";
 import "./DegreeBranchSelection.css";
 import Sidebar from "../components/Sidebar";
 const DegreeBranchSelection = () => {
-  const [openDropdown, setOpenDropdown] = useState(null);
   const [selectedDegree, setSelectedDegree] = useState('');
   const [selectedBranch, setSelectedBranch] = useState('');
   const [programmes, setProgrammes] = useState([]);
@@ -29,10 +28,6 @@ const DegreeBranchSelection = () => {
     fetchProgrammes();
   }, [])
 
-  const toggleDropdown = (dropdown) => {
-    setOpenDropdown(openDropdown === dropdown ? null : dropdown);
-  };
-
   // const handleSelect = (dropdown, value) => {
   //   if (dropdown === "degree") {
   //     setSelectedDegree(value);
@@ -45,7 +40,7 @@ const DegreeBranchSelection = () => {
   const handleDegreeChange = (e) => {
     const selected = e.target.value
     setSelectedDegree(selected);
-    localStorage.setItem("Degree", selected);
+    setSelectedBranch('');
     const degreeObj = programmes.find(p => p.name[0] === selected);
     if (degreeObj) {
       setBranchesForSelectedDegree(degreeObj.branches);
@@ -55,47 +50,46 @@ const DegreeBranchSelection = () => {
     console.log(degreeObj);
   };
 
+  const handleBranchChange = (e) => {
+    setSelectedBranch(e.target.value);
+  };
+
   return (
     <div className="container">
       {/* Select Degree Dropdown */}
       <Sidebar />
       <div className="dropdown">
-        <div className="dropdown-label" onClick={() => toggleDropdown("degree")}>
+        <label className="dropdown-label" htmlFor="degree-select">
           <span className="icon">⚙️</span>
           Select degree
-        </div>
-        {openDropdown === "degree" && (
-          <select className="dropdown-content" value={selectedDegree} onChange={handleDegreeChange} required>
-              <option value="" disabled hidden>
-                -- Select a degree --
-              </option>
-            {
-              programmes.map((prog, idx) => <option key={idx} value={prog.name}>{prog.name}</option>)
-            }
-          </select>
-        )}
+        </label>
+        <select id="degree-select" className="dropdown-content" value={selectedDegree} onChange={handleDegreeChange} required>
+            <option value="" disabled hidden>
+              -- Select a degree --
+            </option>
+          {
+            programmes.map((prog, idx) => <option key={idx} value={prog.name}>{prog.name}</option>)
+          }
+        </select>
       </div>
 
       {/* Select Branch Dropdown */}
       <div className="dropdown">
-        <div className="dropdown-label" onClick={() => toggleDropdown("branch")}>
+        <label className="dropdown-label" htmlFor="branch-select">
           <span className="icon">⚙️</span>
           Select branch
-        </div>
-        {openDropdown === "branch" && (
-          <select className="dropdown-content" value={selectedBranch} 
-            onChange={(e) => { setSelectedBranch(e.target.value); 
-                               localStorage.setItem('Branch', e.target.value); }} required>
+        </label>
+        <select id="branch-select" className="dropdown-content" value={selectedBranch} 
+          onChange={handleBranchChange} required>
 
-            <option value="" disabled hidden>
-              -- Select a branch --
-            </option>
-            {
-              branchesForSelectedDegree.map((branch, idx) => <option key={idx} value={branch}>{branch}</option>)
-            }
+          <option value="" disabled hidden>
+            -- Select a branch --
+          </option>
+          {
+            branchesForSelectedDegree.map((branch, idx) => <option key={idx} value={branch}>{branch}</option>)
+          }
 
-          </select> 
-        )}
+        </select> 
       </div>
 
       <div>
